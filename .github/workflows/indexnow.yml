@@ -1,14 +1,31 @@
-name: 'Simple IndexNow'
+name: 'Auto IndexNow Submit'
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 9,21 * * *'  # 매일 오전 9시, 밤 9시
+  workflow_dispatch:        # 수동 실행도 가능
 
 jobs:
   submit:
     runs-on: ubuntu-latest
     steps:
-      - name: Submit to IndexNow
+      - name: Submit Recent Posts to IndexNow
         run: |
+          echo "🚀 Starting IndexNow submission..."
+          
+          # 최근 포스트 URL 가져오기 (최대 5개)
+          urls=$(curl -s "https://www.myperfectview.com/sitemap.xml" | grep -o 'https://www\.myperfectview\.com[^<]*' | head -5)
+          
+          echo "📋 URLs to submit:"
+          echo "$urls"
+          
+          # URL들을 JSON 배열로 변환
+          url_list=$(echo "$urls" | sed 's/.*/"&"/' | paste -sd ',' -)
+          
+          # IndexNow에 일괄 제출
+          echo "📤 Submitting to IndexNow..."
           curl -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json" \
-            -d '{"host":"www.myperfectview.com","key":"${{ secrets.INDEXNOW_KEY }}","urlList":["https://www.myperfectview.com/2025/08/curious-cashew-nut.html"]}'
+            -d "{\"host\":\"www.myperfectview.com\",\"key\":\"${{ secrets.INDEXNOW_KEY }}\",\"urlList\":[$url_list]}"
+          
+          echo "✅ Submission completed!"
