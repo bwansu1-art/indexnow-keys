@@ -1,0 +1,14 @@
+name: 'Simple IndexNow'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit to IndexNow
+        run: |
+          curl -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json" \
+            -d '{"host":"www.myperfectview.com","key":"${{ secrets.INDEXNOW_KEY }}","urlList":["https://www.myperfectview.com/2025/08/curious-cashew-nut.html"]}'
